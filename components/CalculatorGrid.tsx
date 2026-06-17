@@ -51,16 +51,16 @@ function CalculatorCardGrid({ items }: { items: CalculatorMeta[] }) {
           <Link
             key={c.slug}
             href={`/${c.slug}`}
-            className="group relative overflow-hidden flex flex-col rounded-2xl border border-slate-100 bg-white/70 backdrop-blur p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-brand-200 hover:shadow-xl hover:bg-white"
+            className="group relative overflow-hidden flex flex-col rounded-2xl border border-slate-100 bg-white/70 backdrop-blur p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-indigo-200 hover:shadow-xl hover:bg-white"
           >
             {/* Gradient background on hover */}
-            <div className="absolute inset-0 bg-gradient-to-br from-brand-50 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
+            <div className="absolute inset-0 bg-gradient-to-br from-indigo-50 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
             
             <div className="relative z-10">
-              <span className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-brand-50 to-blue-50 text-brand-600 transition-all duration-300 group-hover:bg-gradient-to-br group-hover:from-brand-500 group-hover:to-brand-600 group-hover:text-white group-hover:shadow-lg">
+              <span className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-50 to-teal-50 text-indigo-600 transition-all duration-300 group-hover:bg-gradient-to-br group-hover:from-indigo-500 group-hover:to-indigo-600 group-hover:text-white group-hover:shadow-lg">
                 <Icon className="h-6 w-6" />
               </span>
-              <h3 className="font-semibold text-slate-900 group-hover:text-brand-600 transition-colors">{c.shortTitle}</h3>
+              <h3 className="font-semibold text-slate-900 group-hover:text-indigo-600 transition-colors">{c.shortTitle}</h3>
               <p className="mt-2 line-clamp-2 text-sm text-slate-600 group-hover:text-slate-700 transition-colors">{c.description}</p>
             </div>
           </Link>

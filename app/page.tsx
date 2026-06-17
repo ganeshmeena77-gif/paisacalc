@@ -35,10 +35,10 @@ export default function Home() {
         <div className="absolute -left-40 bottom-0 h-80 w-80 rounded-full bg-gradient-to-tr from-pink-300 to-purple-400 opacity-10 blur-3xl"></div>
 
         <div className="relative mx-auto max-w-3xl text-center">
-          <div className="mb-6 inline-block rounded-full bg-gradient-to-r from-blue-100 to-indigo-100 px-4 py-2">
-            <span className="text-sm font-semibold text-blue-600">✨ 15 Free Calculators</span>
+          <div className="mb-6 inline-block rounded-full bg-gradient-to-r from-indigo-100 to-teal-100 px-4 py-2">
+            <span className="text-sm font-semibold text-indigo-600">✨ 15 Free Calculators</span>
           </div>
-          <h1 className="bg-gradient-to-r from-slate-900 via-blue-800 to-slate-900 bg-clip-text text-4xl font-bold tracking-tight text-transparent sm:text-6xl">
+          <h1 className="bg-gradient-to-r from-indigo-900 via-indigo-600 to-teal-600 bg-clip-text text-4xl font-bold tracking-tight text-transparent sm:text-6xl">
             Indian Financial Calculators
           </h1>
           <p className="mt-6 text-lg text-slate-600 sm:text-xl">
@@ -47,7 +47,7 @@ export default function Home() {
 
           {/* Search Bar in Hero */}
           <div className="relative mx-auto mt-10 max-w-xl">
-            <div className="flex items-center gap-2 rounded-full border border-slate-200 bg-white/80 backdrop-blur px-5 py-3 shadow-md transition-all focus-within:border-brand-400 focus-within:shadow-lg hover:border-slate-300">
+            <div className="flex items-center gap-2 rounded-full border border-slate-200 bg-white/80 backdrop-blur px-5 py-3 shadow-md transition-all focus-within:border-indigo-400 focus-within:shadow-lg hover:border-slate-300">
               <Search className="h-5 w-5 shrink-0 text-slate-400" />
               <input
                 type="text"
@@ -71,10 +71,10 @@ export default function Home() {
                     <button
                       key={idx}
                       onClick={() => handleSuggestionClick(suggestion)}
-                      className="w-full px-5 py-3 text-left text-sm text-slate-700 hover:bg-blue-50 hover:text-brand-600 flex items-center justify-between transition-colors border-b border-slate-100 last:border-b-0"
+                      className="w-full px-5 py-3 text-left text-sm text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 flex items-center justify-between transition-colors border-b border-slate-100 last:border-b-0"
                     >
                       <span className="font-medium">{suggestion}</span>
-                      <Check className="h-4 w-4 text-brand-500" />
+                      <Check className="h-4 w-4 text-indigo-500" />
                     </button>
                   ))}
                 </div>
