@@ -12,29 +12,29 @@ export default function Header() {
   const [calcMenuOpen, setCalcMenuOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/90 backdrop-blur">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-        <Link href="/" className="flex items-center gap-2 text-lg font-bold text-slate-900">
-          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-600 text-white">
+    <header className="sticky top-0 z-50 border-b border-blue-100 bg-gradient-to-br from-white via-blue-50 to-indigo-50 backdrop-blur">
+      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
+        <Link href="/" className="flex items-center gap-2 text-lg font-bold text-slate-900 hover:text-brand-600 transition-colors">
+          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-brand-600 to-brand-700 text-white shadow-lg">
             <Calculator className="h-5 w-5" />
           </span>
           {SITE_NAME}
         </Link>
 
         {/* Desktop nav */}
-        <nav className="hidden items-center gap-6 md:flex">
+        <nav className="hidden items-center gap-8 md:flex">
           <div
             className="relative"
             onMouseEnter={() => setCalcMenuOpen(true)}
             onMouseLeave={() => setCalcMenuOpen(false)}
           >
-            <button className="flex items-center gap-1 text-sm font-medium text-slate-700 hover:text-brand-600">
+            <button className="flex items-center gap-1 text-sm font-medium text-slate-700 hover:text-brand-600 transition-colors">
               Calculators
               <ChevronDown className="h-4 w-4" />
             </button>
             {calcMenuOpen && (
-              <div className="absolute left-1/2 top-full w-[640px] -translate-x-1/2 pt-2">
-                <div className="grid grid-cols-2 gap-x-8 gap-y-4 rounded-xl border border-slate-200 bg-white p-6 shadow-lg">
+              <div className="absolute left-1/2 top-full w-[640px] -translate-x-1/2 pt-3">
+                <div className="grid grid-cols-2 gap-x-8 gap-y-4 rounded-2xl border border-blue-100 bg-white/95 p-6 shadow-2xl backdrop-blur">
                   {categories.map((category) => (
                     <div key={category}>
                       <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
@@ -47,7 +47,7 @@ export default function Header() {
                             <li key={c.slug}>
                               <Link
                                 href={`/${c.slug}`}
-                                className="text-sm text-slate-700 hover:text-brand-600"
+                                className="text-sm text-slate-700 hover:text-brand-600 hover:font-medium transition-colors"
                               >
                                 {c.shortTitle}
                               </Link>
@@ -60,17 +60,17 @@ export default function Header() {
               </div>
             )}
           </div>
-          <Link href="/about" className="text-sm font-medium text-slate-700 hover:text-brand-600">
+          <Link href="/about" className="text-sm font-medium text-slate-700 hover:text-brand-600 transition-colors">
             About
           </Link>
-          <Link href="/contact" className="text-sm font-medium text-slate-700 hover:text-brand-600">
+          <Link href="/contact" className="text-sm font-medium text-slate-700 hover:text-brand-600 transition-colors">
             Contact
           </Link>
         </nav>
 
         {/* Mobile toggle */}
         <button
-          className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 md:hidden"
+          className="flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 hover:bg-slate-100 transition-colors md:hidden"
           onClick={() => setMobileOpen((v) => !v)}
           aria-label="Toggle menu"
         >
@@ -80,7 +80,7 @@ export default function Header() {
 
       {/* Mobile menu */}
       {mobileOpen && (
-        <div className="border-t border-slate-200 bg-white md:hidden">
+        <div className="border-t border-blue-100 bg-white/95 md:hidden">
           <div className="max-h-[70vh] overflow-y-auto px-4 py-4">
             {categories.map((category) => (
               <div key={category} className="mb-4">
@@ -94,7 +94,7 @@ export default function Header() {
                       <li key={c.slug}>
                         <Link
                           href={`/${c.slug}`}
-                          className="block text-sm text-slate-700"
+                          className="block text-sm text-slate-700 hover:text-brand-600 hover:font-medium transition-colors"
                           onClick={() => setMobileOpen(false)}
                         >
                           {c.shortTitle}
@@ -104,11 +104,11 @@ export default function Header() {
                 </ul>
               </div>
             ))}
-            <div className="flex gap-4 border-t border-slate-200 pt-4 text-sm font-medium text-slate-700">
-              <Link href="/about" onClick={() => setMobileOpen(false)}>
+            <div className="flex gap-4 border-t border-blue-100 pt-4 text-sm font-medium text-slate-700">
+              <Link href="/about" className="hover:text-brand-600 transition-colors" onClick={() => setMobileOpen(false)}>
                 About
               </Link>
-              <Link href="/contact" onClick={() => setMobileOpen(false)}>
+              <Link href="/contact" className="hover:text-brand-600 transition-colors" onClick={() => setMobileOpen(false)}>
                 Contact
               </Link>
             </div>
