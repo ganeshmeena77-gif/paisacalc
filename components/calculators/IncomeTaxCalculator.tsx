@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { calculateIncomeTax, type AgeGroup, type IncomeTaxResult } from "@/lib/calculators";
+import { calculateIncomeTax, type AgeGroup, type FiscalYear, type IncomeTaxResult } from "@/lib/calculators";
 import { formatINR, formatCompactINR } from "@/lib/format";
 import SliderInput from "@/components/ui/SliderInput";
 import ResultStat from "@/components/ui/ResultStat";
@@ -13,22 +13,54 @@ const AGE_GROUPS: { value: AgeGroup; label: string }[] = [
   { value: "above80", label: "Above 80 (Super Senior)" },
 ];
 
+const FISCAL_YEARS: { value: FiscalYear; label: string; ayLabel: string }[] = [
+  { value: "2026-27", label: "FY 2026-27", ayLabel: "AY 2027-28" },
+  { value: "2025-26", label: "FY 2025-26", ayLabel: "AY 2026-27" },
+];
+
 export default function IncomeTaxCalculator() {
+  const [fiscalYear, setFiscalYear] = useState<FiscalYear>("2026-27");
   const [income, setIncome] = useState(1200000);
   const [ageGroup, setAgeGroup] = useState<AgeGroup>("below60");
   const [deductions, setDeductions] = useState(150000);
 
-  const newRegime = useMemo(() => calculateIncomeTax(income, "new", ageGroup, 0), [income, ageGroup]);
+  const newRegime = useMemo(
+    () => calculateIncomeTax(income, "new", ageGroup, 0, fiscalYear),
+    [income, ageGroup, fiscalYear]
+  );
   const oldRegime = useMemo(
-    () => calculateIncomeTax(income, "old", ageGroup, deductions),
-    [income, ageGroup, deductions]
+    () => calculateIncomeTax(income, "old", ageGroup, deductions, fiscalYear),
+    [income, ageGroup, deductions, fiscalYear]
   );
 
   const better = newRegime.totalTax <= oldRegime.totalTax ? "new" : "old";
   const savings = Math.abs(newRegime.totalTax - oldRegime.totalTax);
+  const selectedFY = FISCAL_YEARS.find((f) => f.value === fiscalYear)!;
 
   return (
     <div className="space-y-6">
+      {/* Fiscal Year Selector */}
+      <div className="rounded-xl border border-indigo-100 bg-indigo-50 p-4 dark:border-slate-700 dark:bg-slate-800/60">
+        <p className="mb-3 text-sm font-semibold text-slate-700 dark:text-slate-300">Select Assessment Year</p>
+        <div className="flex flex-wrap gap-3">
+          {FISCAL_YEARS.map((fy) => (
+            <button
+              key={fy.value}
+              onClick={() => setFiscalYear(fy.value)}
+              className={`flex flex-col items-start rounded-xl border px-5 py-3 text-left transition ${
+                fiscalYear === fy.value
+                  ? "border-brand-500 bg-brand-600 text-white shadow-md"
+                  : "border-slate-200 bg-white text-slate-700 hover:border-brand-300 hover:bg-brand-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:border-brand-500"
+              }`}
+            >
+              <span className="text-base font-bold">{fy.label}</span>
+              <span className={`text-xs ${fiscalYear === fy.value ? "text-indigo-200" : "text-slate-400"}`}>
+                {fy.ayLabel}
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
       <div className="grid gap-6 sm:grid-cols-2">
         <SliderInput
           label="Annual Gross Income (CTC / salary before deductions)"
@@ -72,7 +104,7 @@ export default function IncomeTaxCalculator() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <RegimeCard title="New Regime (Default)" result={newRegime} highlight={better === "new"} />
+        <RegimeCard title={`New Regime (${selectedFY.label})`} result={newRegime} highlight={better === "new"} />
         <RegimeCard title="Old Regime" result={oldRegime} highlight={better === "old"} />
       </div>
 
@@ -82,7 +114,7 @@ export default function IncomeTaxCalculator() {
       </div>
 
       <div className="grid gap-6 sm:grid-cols-2">
-        <SlabTable title="New Regime — Slab-wise Tax" result={newRegime} />
+        <SlabTable title={`New Regime — Slab-wise Tax (${selectedFY.label})`} result={newRegime} />
         <SlabTable title="Old Regime — Slab-wise Tax" result={oldRegime} />
       </div>
     </div>

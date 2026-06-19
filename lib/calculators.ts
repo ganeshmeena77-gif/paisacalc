@@ -516,11 +516,12 @@ export function calculateInflation(
 }
 
 /* ------------------------------------------------------------------ */
-/* Income tax (FY 2026-27 / AY 2027-28)                                 */
+/* Income tax                                                            */
 /* ------------------------------------------------------------------ */
 
 export type TaxRegime = "new" | "old";
 export type AgeGroup = "below60" | "60to80" | "above80";
+export type FiscalYear = "2026-27" | "2025-26";
 
 export interface TaxSlab {
   from: number;
@@ -547,8 +548,8 @@ export interface IncomeTaxResult {
   slabBreakdown: TaxSlabBreakdown[];
 }
 
-/** New regime slabs, unchanged for FY 2026-27 (Budget 2026 retained FY 2025-26 structure). */
-export const NEW_REGIME_SLABS: TaxSlab[] = [
+/** New regime slabs for FY 2026-27 (AY 2027-28). */
+export const NEW_REGIME_SLABS_FY2627: TaxSlab[] = [
   { from: 0, upTo: 400000, rate: 0 },
   { from: 400000, upTo: 800000, rate: 5 },
   { from: 800000, upTo: 1200000, rate: 10 },
@@ -557,6 +558,19 @@ export const NEW_REGIME_SLABS: TaxSlab[] = [
   { from: 2000000, upTo: 2400000, rate: 25 },
   { from: 2400000, upTo: Infinity, rate: 30 },
 ];
+
+/** New regime slabs for FY 2025-26 (AY 2026-27). */
+export const NEW_REGIME_SLABS_FY2526: TaxSlab[] = [
+  { from: 0, upTo: 300000, rate: 0 },
+  { from: 300000, upTo: 600000, rate: 5 },
+  { from: 600000, upTo: 900000, rate: 10 },
+  { from: 900000, upTo: 1200000, rate: 15 },
+  { from: 1200000, upTo: 1500000, rate: 20 },
+  { from: 1500000, upTo: Infinity, rate: 30 },
+];
+
+/** @deprecated Use NEW_REGIME_SLABS_FY2627 */
+export const NEW_REGIME_SLABS = NEW_REGIME_SLABS_FY2627;
 
 /** Old regime slabs vary by age; the basic exemption limit shifts up. */
 export function getOldRegimeSlabs(ageGroup: AgeGroup): TaxSlab[] {
@@ -595,32 +609,42 @@ function computeSurcharge(tax: number, taxableIncome: number, regime: TaxRegime)
 }
 
 /**
- * Computes total tax payable for FY 2026-27 (AY 2027-28).
+ * Computes total tax payable for the given fiscal year (defaults to FY 2026-27).
  *
- * - New regime: flat ₹75,000 standard deduction, no other deductions allowed.
- * - Old regime: ₹50,000 standard deduction plus any other deductions the
- *   user enters (80C, 80D, home loan interest, HRA exemption, etc.).
+ * FY 2026-27 (AY 2027-28):
+ * - New regime: ₹75,000 std deduction, rebate up to ₹12L (max ₹60,000), nil up to ₹12.75L gross.
  *
- * Section 87A rebate + marginal relief is applied so tax never increases by
- * more than the income that crosses the rebate threshold (₹12L new / ₹5L old).
- * A basic surcharge is applied above ₹50L (without its own marginal relief —
- * very high earners should consult a CA for that nuance).
+ * FY 2025-26 (AY 2026-27):
+ * - New regime: ₹75,000 std deduction, rebate up to ₹7L (max ₹25,000), nil up to ₹7.75L gross.
+ *
+ * Old regime slabs are the same for both years.
  */
 export function calculateIncomeTax(
   grossIncome: number,
   regime: TaxRegime,
   ageGroup: AgeGroup = "below60",
-  otherDeductions = 0
+  otherDeductions = 0,
+  fiscalYear: FiscalYear = "2026-27"
 ): IncomeTaxResult {
   const standardDeduction = regime === "new" ? 75000 : 50000;
   const deductions = regime === "new" ? 0 : Math.max(0, otherDeductions);
   const taxableIncome = Math.max(0, grossIncome - standardDeduction - deductions);
 
-  const slabs = regime === "new" ? NEW_REGIME_SLABS : getOldRegimeSlabs(ageGroup);
-  const { tax: taxBeforeRebate, breakdown } = computeSlabTax(taxableIncome, slabs);
+  let slabs: TaxSlab[];
+  let rebateThreshold: number;
+  let maxRebate: number;
 
-  const rebateThreshold = regime === "new" ? 1200000 : 500000;
-  const maxRebate = regime === "new" ? 60000 : 12500;
+  if (regime === "new") {
+    slabs = fiscalYear === "2025-26" ? NEW_REGIME_SLABS_FY2526 : NEW_REGIME_SLABS_FY2627;
+    rebateThreshold = fiscalYear === "2025-26" ? 700000 : 1200000;
+    maxRebate = fiscalYear === "2025-26" ? 25000 : 60000;
+  } else {
+    slabs = getOldRegimeSlabs(ageGroup);
+    rebateThreshold = 500000;
+    maxRebate = 12500;
+  }
+
+  const { tax: taxBeforeRebate, breakdown } = computeSlabTax(taxableIncome, slabs);
 
   let taxAfterRebate: number;
   let rebate: number;
