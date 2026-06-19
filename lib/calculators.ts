@@ -540,6 +540,7 @@ export interface IncomeTaxResult {
   taxableIncome: number;
   taxBeforeRebate: number;
   rebate: number;
+  taxAfterRebate: number;
   surcharge: number;
   cess: number;
   totalTax: number;
@@ -561,12 +562,13 @@ export const NEW_REGIME_SLABS_FY2627: TaxSlab[] = [
 
 /** New regime slabs for FY 2025-26 (AY 2026-27). */
 export const NEW_REGIME_SLABS_FY2526: TaxSlab[] = [
-  { from: 0, upTo: 300000, rate: 0 },
-  { from: 300000, upTo: 600000, rate: 5 },
-  { from: 600000, upTo: 900000, rate: 10 },
-  { from: 900000, upTo: 1200000, rate: 15 },
-  { from: 1200000, upTo: 1500000, rate: 20 },
-  { from: 1500000, upTo: Infinity, rate: 30 },
+  { from: 0, upTo: 400000, rate: 0 },
+  { from: 400000, upTo: 800000, rate: 5 },
+  { from: 800000, upTo: 1200000, rate: 10 },
+  { from: 1200000, upTo: 1600000, rate: 15 },
+  { from: 1600000, upTo: 2000000, rate: 20 },
+  { from: 2000000, upTo: 2400000, rate: 25 },
+  { from: 2400000, upTo: Infinity, rate: 30 },
 ];
 
 /** @deprecated Use NEW_REGIME_SLABS_FY2627 */
@@ -615,7 +617,7 @@ function computeSurcharge(tax: number, taxableIncome: number, regime: TaxRegime)
  * - New regime: ₹75,000 std deduction, rebate up to ₹12L (max ₹60,000), nil up to ₹12.75L gross.
  *
  * FY 2025-26 (AY 2026-27):
- * - New regime: ₹75,000 std deduction, rebate up to ₹7L (max ₹25,000), nil up to ₹7.75L gross.
+ * - New regime: same slab structure as FY 2026-27 and rebate up to ₹12L (max ₹60,000).
  *
  * Old regime slabs are the same for both years.
  */
@@ -636,8 +638,8 @@ export function calculateIncomeTax(
 
   if (regime === "new") {
     slabs = fiscalYear === "2025-26" ? NEW_REGIME_SLABS_FY2526 : NEW_REGIME_SLABS_FY2627;
-    rebateThreshold = fiscalYear === "2025-26" ? 700000 : 1200000;
-    maxRebate = fiscalYear === "2025-26" ? 25000 : 60000;
+    rebateThreshold = 1200000;
+    maxRebate = 60000;
   } else {
     slabs = getOldRegimeSlabs(ageGroup);
     rebateThreshold = 500000;
@@ -674,12 +676,182 @@ export function calculateIncomeTax(
     taxableIncome,
     taxBeforeRebate,
     rebate,
+    taxAfterRebate,
     surcharge,
     cess,
     totalTax,
     takeHomeAnnual: grossIncome - totalTax,
     effectiveRate: grossIncome > 0 ? (totalTax / grossIncome) * 100 : 0,
     slabBreakdown: breakdown,
+  };
+}
+
+export interface OldRegimeDeductionInput {
+  section80C: number;
+  section80D: number;
+  section80CCD1B: number;
+  hraExemption: number;
+  homeLoanInterest: number;
+  otherDeductions: number;
+}
+
+export interface OldRegimeDeductionSummary {
+  section80CClaimed: number;
+  section80CAllowed: number;
+  section80DClaimed: number;
+  section80DAllowed: number;
+  section80CCD1BClaimed: number;
+  section80CCD1BAllowed: number;
+  hraExemptionClaimed: number;
+  hraExemptionAllowed: number;
+  homeLoanInterestClaimed: number;
+  homeLoanInterestAllowed: number;
+  otherDeductionsClaimed: number;
+  otherDeductionsAllowed: number;
+  totalClaimed: number;
+  totalAllowed: number;
+}
+
+export interface IncomeTaxDetailedInput {
+  salaryIncome: number;
+  otherIncome: number;
+  regime: TaxRegime;
+  ageGroup: AgeGroup;
+  fiscalYear: FiscalYear;
+  oldRegimeDeductions: OldRegimeDeductionInput;
+  stcg111A: number;
+  ltcg112A: number;
+  tdsPaid: number;
+}
+
+export interface IncomeTaxDetailedResult {
+  normalTax: IncomeTaxResult;
+  deductionSummary: OldRegimeDeductionSummary;
+  grossTotalIncome: number;
+  specialRateIncome: number;
+  stcg111ATax: number;
+  ltcg112AExemption: number;
+  ltcg112ATaxable: number;
+  ltcg112ATax: number;
+  baseTaxAfterRebate: number;
+  taxBeforeCess: number;
+  surcharge: number;
+  cess: number;
+  totalTaxLiability: number;
+  tdsPaid: number;
+  netTaxPayable: number;
+  expectedRefund: number;
+}
+
+function clamp(value: number, minValue: number, maxValue = Number.POSITIVE_INFINITY): number {
+  return Math.min(Math.max(value, minValue), maxValue);
+}
+
+export function summarizeOldRegimeDeductions(input: OldRegimeDeductionInput): OldRegimeDeductionSummary {
+  const section80CClaimed = Math.max(0, input.section80C);
+  const section80DClaimed = Math.max(0, input.section80D);
+  const section80CCD1BClaimed = Math.max(0, input.section80CCD1B);
+  const hraExemptionClaimed = Math.max(0, input.hraExemption);
+  const homeLoanInterestClaimed = Math.max(0, input.homeLoanInterest);
+  const otherDeductionsClaimed = Math.max(0, input.otherDeductions);
+
+  const summary: OldRegimeDeductionSummary = {
+    section80CClaimed,
+    section80CAllowed: clamp(section80CClaimed, 0, 150000),
+    section80DClaimed,
+    section80DAllowed: clamp(section80DClaimed, 0, 50000),
+    section80CCD1BClaimed,
+    section80CCD1BAllowed: clamp(section80CCD1BClaimed, 0, 50000),
+    hraExemptionClaimed,
+    hraExemptionAllowed: hraExemptionClaimed,
+    homeLoanInterestClaimed,
+    homeLoanInterestAllowed: clamp(homeLoanInterestClaimed, 0, 200000),
+    otherDeductionsClaimed,
+    otherDeductionsAllowed: otherDeductionsClaimed,
+    totalClaimed: 0,
+    totalAllowed: 0,
+  };
+
+  summary.totalClaimed =
+    summary.section80CClaimed +
+    summary.section80DClaimed +
+    summary.section80CCD1BClaimed +
+    summary.hraExemptionClaimed +
+    summary.homeLoanInterestClaimed +
+    summary.otherDeductionsClaimed;
+
+  summary.totalAllowed =
+    summary.section80CAllowed +
+    summary.section80DAllowed +
+    summary.section80CCD1BAllowed +
+    summary.hraExemptionAllowed +
+    summary.homeLoanInterestAllowed +
+    summary.otherDeductionsAllowed;
+
+  return summary;
+}
+
+/**
+ * Detailed tax estimate including income breakup, special-rate capital gains,
+ * capped old-regime deductions, and TDS settlement (refund vs due).
+ */
+export function calculateIncomeTaxDetailed(input: IncomeTaxDetailedInput): IncomeTaxDetailedResult {
+  const salaryIncome = Math.max(0, input.salaryIncome);
+  const otherIncome = Math.max(0, input.otherIncome);
+  const stcg111A = Math.max(0, input.stcg111A);
+  const ltcg112A = Math.max(0, input.ltcg112A);
+  const tdsPaid = Math.max(0, input.tdsPaid);
+
+  const deductionSummary = summarizeOldRegimeDeductions(input.oldRegimeDeductions);
+  const grossTotalIncome = salaryIncome + otherIncome + stcg111A + ltcg112A;
+  const normalIncome = salaryIncome + otherIncome;
+
+  const normalTax = calculateIncomeTax(
+    normalIncome,
+    input.regime,
+    input.ageGroup,
+    input.regime === "old" ? deductionSummary.totalAllowed : 0,
+    input.fiscalYear
+  );
+
+  const ltcg112AExemption = 125000;
+  const ltcg112ATaxable = Math.max(0, ltcg112A - ltcg112AExemption);
+  const stcg111ATax = stcg111A * 0.15;
+  const ltcg112ATax = ltcg112ATaxable * 0.125;
+
+  const baseTaxAfterRebate = normalTax.taxAfterRebate;
+  const specialRateTax = stcg111ATax + ltcg112ATax;
+  const specialRateIncome = stcg111A + ltcg112ATaxable;
+  const taxBeforeSurcharge = baseTaxAfterRebate + specialRateTax;
+
+  const surcharge = computeSurcharge(
+    taxBeforeSurcharge,
+    normalTax.taxableIncome + specialRateIncome,
+    input.regime
+  );
+  const cess = (taxBeforeSurcharge + surcharge) * 0.04;
+  const totalTaxLiability = taxBeforeSurcharge + surcharge + cess;
+
+  const netTaxPayable = Math.max(0, totalTaxLiability - tdsPaid);
+  const expectedRefund = Math.max(0, tdsPaid - totalTaxLiability);
+
+  return {
+    normalTax,
+    deductionSummary,
+    grossTotalIncome,
+    specialRateIncome,
+    stcg111ATax,
+    ltcg112AExemption,
+    ltcg112ATaxable,
+    ltcg112ATax,
+    baseTaxAfterRebate,
+    taxBeforeCess: taxBeforeSurcharge + surcharge,
+    surcharge,
+    cess,
+    totalTaxLiability,
+    tdsPaid,
+    netTaxPayable,
+    expectedRefund,
   };
 }
 
