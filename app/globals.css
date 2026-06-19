@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
+@custom-variant dark (&:where(.dark, .dark *));
 
 :root {
   --background: #ffffff;
@@ -20,13 +21,6 @@
   --color-positive-50: #f0fdf4;
   --color-positive-500: #16a34a;
   --color-positive-600: #15803d;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0f172a;
-    --foreground: #f8fafc;
-  }
 }
 
 html.dark {
