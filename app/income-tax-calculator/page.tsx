@@ -43,6 +43,11 @@ const faqs = [
     answer:
       "The old regime allows deductions such as Section 80C (up to ₹1.5L for PPF, ELSS, life insurance, etc.), Section 80D (health insurance premiums), HRA exemption, home loan interest under Section 24(b), and NPS contributions under 80CCD(1B). The new regime does not allow most of these — only the standard deduction and employer's NPS contribution.",
   },
+  {
+    question: "What is the STCG tax rate on equity for FY 2025-26 and FY 2026-27?",
+    answer:
+      "Short-term capital gains (STCG) on equity shares and equity-oriented mutual funds (held for less than 12 months) are taxed at a flat 20% under Section 111A, effective from 23 July 2024 (Budget 2024). This rate applies for both FY 2025-26 and FY 2026-27. Prior to Budget 2024, the rate was 15%. Long-term capital gains (LTCG) on equity above ₹1.25 lakh per year are taxed at 12.5% under Section 112A.",
+  },
 ];
 
 export default function Page() {
@@ -116,6 +121,16 @@ export default function Page() {
         surcharge applies only to higher incomes: 10% above ₹50L, 15% above ₹1Cr, and 25% above ₹2Cr (the
         new regime caps surcharge at 25% even for incomes above ₹5Cr, while the old regime surcharge can go
         up to 37%).
+      </p>
+
+      <h3>Capital Gains Tax Rates (FY 2025-26 &amp; FY 2026-27)</h3>
+      <p>
+        Capital gains are taxed separately from salary income. For equity shares and equity mutual funds,{" "}
+        <strong>short-term capital gains (STCG)</strong> — units held for less than 12 months — are taxed at a
+        flat <strong>20%</strong> under Section 111A (raised from 15% by Budget 2024, effective 23 July 2024).{" "}
+        <strong>Long-term capital gains (LTCG)</strong> above ₹1.25 lakh per year are taxed at{" "}
+        <strong>12.5%</strong> under Section 112A. Debt fund gains are added to your income and taxed at your
+        applicable slab rate.
       </p>
 
       <h3>Worked Example</h3>
